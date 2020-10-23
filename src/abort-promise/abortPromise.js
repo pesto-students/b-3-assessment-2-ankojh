@@ -1,0 +1,3 @@
+class AbortablePromise {}
+
+export { AbortablePromise };

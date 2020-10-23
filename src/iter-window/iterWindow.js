@@ -1,0 +1,3 @@
+function* iterWindow() {}
+
+export { iterWindow };
