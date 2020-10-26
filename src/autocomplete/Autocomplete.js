@@ -19,7 +19,8 @@ const AutocompleteListItem = ({text, onSelectItem}) => {
 
 
 const AutocompleteList = ({list, onSelectItem}) => { //? New File?
-
+//! props drilling
+//? useContext?
   if(!list.length){
     return null;
   }

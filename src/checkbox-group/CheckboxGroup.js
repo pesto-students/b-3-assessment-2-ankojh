@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 
 
 const CheckboxContext = React.createContext();
@@ -31,28 +31,32 @@ class CheckboxGroup extends React.Component {
   }
 
 
-  componentDidMount(){
+  componentDidMount() {
     const defaultChecked = {}
-    this.props.value.forEach((value)=>{
+    this.props.value.forEach((value) => {
       defaultChecked[value] = true
     })
-    this.setState({checked:defaultChecked})
+    this.setState({ checked: defaultChecked })
   }
 
 
   onChangeHandler(value, checkedState) {
-    this.setState({checked:{...this.state.checked, [value]: checkedState}}, ()=>{
-      this.props.onChange(Object.keys(this.state.checked).filter(value=>this.state.checked[value]));
+    this.setState({ checked: { ...this.state.checked, [value]: checkedState } }, () => {
+      this.props.onChange(Object.keys(this.state.checked).filter(value => this.state.checked[value]));
     })
   }
 
-  isChecked(value){
+  isChecked(value) {
     return Boolean(this.state.checked[value])
   }
 
 
   render() {
-    return <CheckboxContext.Provider value={{ onChange: this.onChangeHandler.bind(this), isChecked: this.isChecked.bind(this)  }}>
+    return <CheckboxContext.Provider
+      value={{
+        onChange: this.onChangeHandler.bind(this),
+        isChecked: this.isChecked.bind(this)
+      }}>
       {this.props.children(Checkbox)}
     </CheckboxContext.Provider>
   }
