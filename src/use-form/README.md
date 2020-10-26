@@ -35,7 +35,7 @@ The keys will be the `name` prop of the field, and the value will be whatever va
 <input name="lastname" ref={register({ required: true })} />
 {errors.lastname && 'Last name is required.'}
 ```
-_Note_: Take a note of how the `register` is called. It is given an object which contain the validation checks.
+_Note_: Take a note of how the `register` is called. It is given an object which contain the validation checkss.
 
 The `errors` can be updated when the submit button is clicked. Though, any other technique is also fine.
 
