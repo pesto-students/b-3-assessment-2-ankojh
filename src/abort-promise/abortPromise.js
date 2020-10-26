@@ -1,4 +1,4 @@
-const { reject } = require("lodash");
+// const { reject } = require("lodash");
 // import { extend } from "lodash";
 
 const ABORTED_STATE = 'aborted'
@@ -8,6 +8,7 @@ class AbortError extends Error {
   //! do it right
   constructor(message) {
     super(message);
+    this.message = message
   }
 }
 
@@ -36,17 +37,27 @@ class AbortablePromise {
   }
 
   abort(reason){
+    //? no need to validate reason as reason can be anything
     this._promiseState = ABORTED_STATE;
     this._reject(new AbortError(reason));
+
+    return new AbortablePromise(resolve=>{ //? chaining if you want to.
+      if (typeof this._onAbortFunc === 'function'){
+        resolve(this._onAbortFunc()) //? return value of onAbortFunc to pass on to the chain
+      }
+      else{
+        resolve();
+      }
+    })
   }
 
   then(func){
-    //? Does AbortablePromise.then returns a promise or a AbortablePromise?
-    return this._promise.then(func);
+    //! Does AbortablePromise.then() returns a normal Promise or a AbortablePromise?
+    // return this._promise.then(func);
   
-    // return new AbortablePromise(resolve=>{
-    //   resolve(this._promise.then(func));
-    // }) 
+    return new AbortablePromise(resolve=>{
+      resolve(this._promise.then(func));
+    }) 
   }
 
   catch(func){
@@ -57,119 +68,21 @@ class AbortablePromise {
     return this._promise.then(func, func);
   }
 
-  static Resolve(value) {
-    //check for value === promise
+  static resolve(value) {
+    if(value instanceof Promise){
+      return value;
+    }
     return new AbortablePromise(resolve => resolve(value));
   }
 
-  static Reject(value) {
-    //check for value === promise
+  static reject(value) {
+    //* does not check for promise in real 
     return new AbortablePromise((_, reject) => reject(value));
   }
 
-  static Abort(value) {
-    //check for value === promise
-     this.Reject(new AbortError(value));
+  static abort(value) {  //? static namespace.
+     return this.reject(new AbortError(value));
   }
 }
 
-// * Test Cases 
-
-
-
-// async function main(){
-//   try {
-//     const p = new AbortablePromise((resolve, reject, onAbort) => { 
-//         setTimeout(()=>{
-//             // resolve('rs')
-//             reject('rj');
-//           }, 5000);
-//         onAbort(() => { console.log('pp') })
-//        });
-//     p.abort('Reason is you');
-//     p.catch(console.log)
-//   }
-//   catch (e) {
-//     console.log('err', e);
-//   }
-// }
-
-
-// main();
-
 export { AbortablePromise };
-
-
-// class AbortablePromise {
-//   _promiseState = ABORTABLE_PROMISE_STATES.PENDING;
-//   _result = null
-
-//   get isAborted(){
-//     return this._promiseState === ABORTABLE_PROMISE_STATES.ABORTED
-//   }
-
-//   constructor(func) {
-//     func(this.onResolve, this.onReject, this.onAbort);
-//   }
-
-//   static Resolve(value) {
-//     return new AbortablePromise(resolve=>resolve(value));
-//   }
-
-
-//   static Reject(value) {
-//     return new AbortablePromise((_,reject) => reject(value));
-//   }
-
-//   static Abort(value) {//? Creates a promise that aborts instantly
-//     return new AbortablePromise((_,_, abort) => abort(value));
-//   }
-
-//   _isPromiseStatePending(){
-//     return this._promiseState === ABORTABLE_PROMISE_STATES.PENDING
-//   } 
-
-//   onFulfilled(value) {
-//     if (this._isPromiseStatePending()) {
-//       this._result = value;
-//     }
-//     this._state = ABORTABLE_PROMISE_STATES.FULFILLED;
-//   }
-
-//   //TODO: DRY
-//   onReject(error) {
-//     if (this._isPromiseStatePending()){
-//       this._result = error
-//     }
-//     this._state = ABORTABLE_PROMISE_STATES.REJECTED;
-//   }
-
-//   //TODO: DRY
-//   onAbort(reason) {
-//     if(this._isPromiseStatePending()){
-//       this._result = reason;
-//     }
-//     this._state = ABORTABLE_PROMISE_STATES.ABORTED;
-//   }
-
-
-//   then(onFulfilled, onRejected, onAborted) {
-//     return new AbortablePromise((resolve, reject, onAbort)=>{
-//       // if()
-//     })
-//   }
-
-//   catch(onRejected) {
-//     return this.then(null, onRejected);
-//   } 
-
-//   abort(onAborted) {
-//     return this.then(null, null, onAborted)
-//   }
-
-//   finally(onFinally) {
-//     return this.then(onFinally, onFinally, onFinally);
-//   }
-
-// }
-
