@@ -7,23 +7,33 @@ const VALIDATIONS_HANDLERS = {
 };
 
 
+function isNumber(number){
+  //+- infinity is fine
+  return (typeof number === 'number' && Number.isFinite(number) && !Number.isNaN(number))
+}
+
 function doesFailRequired(value) {
   return !Boolean(value);
 }
 
 function doesFailMaxLength(value, maxLength) {
-  //validate value and maxlengths
+  if(!isNumber(maxLength)){
+    throw new TypeError(`Expected Number instead got ${maxLength} of type ${typeof maxLength}`)
+  }
+
   return value.toString().length > maxLength
 }
 
 
 function doesFailMinLength(value, minLength) {
-  //validate value and minLength
+  if (!isNumber(minLength)) {
+    throw new TypeError(`Expected Number instead got ${minLength} of type ${typeof minLength}`)
+  }
   return value.toString().length < minLength
 }
 
 function validateElement(element, validations) {
-  const errors = {} 
+  const errors = {}
   Object.keys(validations).forEach(validationKey => {
     switch (validationKey) {
       case 'required':
@@ -32,8 +42,11 @@ function validateElement(element, validations) {
         }
         break;
       case 'maxLength':
-         errors[validationKey] = VALIDATIONS_HANDLERS[validationKey](element.value, validations[validationKey])
-         break;
+        errors[validationKey] = VALIDATIONS_HANDLERS[validationKey](element.value, validations[validationKey])
+        break;
+      case 'minLength':
+        errors[validationKey] = VALIDATIONS_HANDLERS[validationKey](element.value, validations[validationKey])
+        break;
       default:
         break;
     }
@@ -49,30 +62,31 @@ function useForm() {
 
   const [errors, setErrors] = useState({});
 
-  //todo validate params
   function registerElement(htmlElement, validations) {
     const key = htmlElement.name;
 
     elements[key] = {
-        el: htmlElement,
-        validations
-      }
+      el: htmlElement,
+      validations
+    }
   }
 
   // function unregisterElement(){}
 
-  //todo validate params
   function register(object) {
-    if(!object){
-      return;
+
+    if (typeof object !== 'object'){
+      throw new TypeError(`Expected Object, instead got ${object} of type ${typeof object}`) 
     }
+
     if (object instanceof HTMLElement) {
       registerElement(object, {});
       return;
     }
 
     return (htmlElement) => {
-      if(!htmlElement){
+      //? no need to validate htmlElement as it is React generated
+      if (!htmlElement) {
         return
       }
       registerElement(htmlElement, object);
@@ -89,10 +103,15 @@ function useForm() {
       errors[elementKey] = validateElement(el, validations);
     })
 
-    return {keyValuePairs, errors};
+    return { keyValuePairs, errors };
   }
 
   function handleSubmit(onSubmit) {
+
+    if (typeof onSubmit !== 'function') {
+      throw new TypeError(`Expected function, instead got ${onSubmit} of type ${typeof onSubmit}`)
+    }
+
     return (event) => {
       event.preventDefault();
       const { keyValuePairs, errors } = processAllElements()
