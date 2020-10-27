@@ -80,7 +80,7 @@ class AbortablePromise {
     return new AbortablePromise((_, reject) => reject(value));
   }
 
-  static abort(value) {  //? static namespace.
+  static doAbort(value) {  
      return this.reject(new AbortError(value));
   }
 }
